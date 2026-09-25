@@ -26,3 +26,9 @@ Faker==25.8.0
 
 # Utilities
 uuid==1.30
+
+# Background Tasks & Caching
+celery==5.4.0
+redis==5.0.4
+django-redis==5.4.0
+

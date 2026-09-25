@@ -147,6 +147,14 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "common.pagination.StandardResultsPagination",
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": "common.exceptions.custom_exception_handler",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": config("THROTTLE_ANON_RATE", default="100/day"),
+        "user": config("THROTTLE_USER_RATE", default="1000/day"),
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -199,7 +207,7 @@ CORS_ALLOWED_ORIGINS = config(
 PAYMENT_SUCCESS_RATE = config("PAYMENT_SUCCESS_RATE", default=0.8, cast=float)
 
 # ---------------------------------------------------------------------------
-# Logging
+# Structured Logging
 # ---------------------------------------------------------------------------
 LOGGING = {
     "version": 1,
@@ -237,3 +245,42 @@ LOGGING = {
         },
     },
 }
+
+# ---------------------------------------------------------------------------
+# Caching (Redis in Production / Docker, LocMem fallback locally)
+# ---------------------------------------------------------------------------
+
+REDIS_URL = config("REDIS_URL", default="redis://localhost:6379/1")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
+if config("USE_REDIS_CACHE", default=False, cast=bool):
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+            "KEY_PREFIX": "eve_healthcare",
+            "TIMEOUT": 300,  # 5 minutes
+        }
+    }
+
+# ---------------------------------------------------------------------------
+# Celery Background Tasks
+# ---------------------------------------------------------------------------
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+
