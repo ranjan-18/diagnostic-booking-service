@@ -124,16 +124,29 @@ WSGI_APPLICATION = "config.wsgi.application"
 # ---------------------------------------------------------------------------
 # Database
 # ---------------------------------------------------------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env_str("DB_NAME", "eve_healthcare"),
-        "USER": env_str("DB_USER", "postgres"),
-        "PASSWORD": env_str("DB_PASSWORD", "postgres"),
-        "HOST": env_str("DB_HOST", "localhost"),
-        "PORT": env_str("DB_PORT", "5432"),
+IS_VERCEL = bool(os.environ.get("VERCEL"))
+db_host = env_str("DB_HOST", "localhost")
+
+# If on Vercel without a remote Postgres host, fallback to /tmp SQLite
+if IS_VERCEL and (db_host in ("localhost", "127.0.0.1") or not os.environ.get("DB_HOST")):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": "/tmp/db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env_str("DB_NAME", "eve_healthcare"),
+            "USER": env_str("DB_USER", "postgres"),
+            "PASSWORD": env_str("DB_PASSWORD", "postgres"),
+            "HOST": db_host,
+            "PORT": env_str("DB_PORT", "5432"),
+        }
+    }
+
 
 # ---------------------------------------------------------------------------
 # Password validation
