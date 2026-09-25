@@ -5,7 +5,43 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from decouple import config
+# ---------------------------------------------------------------------------
+# Safe Environment Helpers (Handles empty strings and missing keys gracefully)
+# ---------------------------------------------------------------------------
+def env_str(key: str, default: str = "") -> str:
+    val = os.environ.get(key, "").strip()
+    return val if val else default
+
+def env_int(key: str, default: int) -> int:
+    val = os.environ.get(key, "").strip()
+    if not val:
+        return default
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return default
+
+def env_float(key: str, default: float) -> float:
+    val = os.environ.get(key, "").strip()
+    if not val:
+        return default
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+def env_bool(key: str, default: bool = False) -> bool:
+    val = os.environ.get(key, "").strip().lower()
+    if not val:
+        return default
+    return val in ("1", "true", "yes", "on")
+
+def env_list(key: str, default: list[str]) -> list[str]:
+    val = os.environ.get(key, "").strip()
+    if not val:
+        return default
+    return [item.strip() for item in val.split(",") if item.strip()]
+
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -15,9 +51,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # ---------------------------------------------------------------------------
 # Security
 # ---------------------------------------------------------------------------
-SECRET_KEY = config("DJANGO_SECRET_KEY")
-DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
+SECRET_KEY = env_str("DJANGO_SECRET_KEY", "django-insecure-eve-healthcare-secret-key-replace-in-prod")
+DEBUG = env_bool("DJANGO_DEBUG", False)
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", ["*", "localhost", "127.0.0.1"])
 
 # ---------------------------------------------------------------------------
 # Applications
@@ -91,11 +127,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="eve_healthcare"),
-        "USER": config("DB_USER", default="postgres"),
-        "PASSWORD": config("DB_PASSWORD", default="postgres"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+        "NAME": env_str("DB_NAME", "eve_healthcare"),
+        "USER": env_str("DB_USER", "postgres"),
+        "PASSWORD": env_str("DB_PASSWORD", "postgres"),
+        "HOST": env_str("DB_HOST", "localhost"),
+        "PORT": env_str("DB_PORT", "5432"),
     }
 }
 
@@ -152,8 +188,8 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": config("THROTTLE_ANON_RATE", default="100/day"),
-        "user": config("THROTTLE_USER_RATE", default="1000/day"),
+        "anon": env_str("THROTTLE_ANON_RATE", "100/day"),
+        "user": env_str("THROTTLE_USER_RATE", "1000/day"),
     },
 }
 
@@ -162,10 +198,10 @@ REST_FRAMEWORK = {
 # ---------------------------------------------------------------------------
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=config("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", default=60, cast=int)
+        minutes=env_int("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 60)
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
-        days=config("JWT_REFRESH_TOKEN_LIFETIME_DAYS", default=7, cast=int)
+        days=env_int("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 7)
     ),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": False,
@@ -196,15 +232,13 @@ SPECTACULAR_SETTINGS = {
 # ---------------------------------------------------------------------------
 # CORS
 # ---------------------------------------------------------------------------
-CORS_ALLOWED_ORIGINS = config(
-    "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:3000",
-).split(",")
+CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", ["http://localhost:3000", "http://localhost:5173"])
+CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", True)
 
 # ---------------------------------------------------------------------------
 # Payment simulation
 # ---------------------------------------------------------------------------
-PAYMENT_SUCCESS_RATE = config("PAYMENT_SUCCESS_RATE", default=0.8, cast=float)
+PAYMENT_SUCCESS_RATE = env_float("PAYMENT_SUCCESS_RATE", 0.8)
 
 # ---------------------------------------------------------------------------
 # Structured Logging
@@ -249,8 +283,7 @@ LOGGING = {
 # ---------------------------------------------------------------------------
 # Caching (Redis in Production / Docker, LocMem fallback locally)
 # ---------------------------------------------------------------------------
-
-REDIS_URL = config("REDIS_URL", default="redis://localhost:6379/1")
+REDIS_URL = env_str("REDIS_URL", "redis://localhost:6379/1")
 
 CACHES = {
     "default": {
@@ -259,28 +292,31 @@ CACHES = {
     }
 }
 
-if config("USE_REDIS_CACHE", default=False, cast=bool):
-    CACHES = {
-        "default": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": REDIS_URL,
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            },
-            "KEY_PREFIX": "eve_healthcare",
-            "TIMEOUT": 300,  # 5 minutes
+if env_bool("USE_REDIS_CACHE", False):
+    try:
+        import django_redis  # noqa: F401
+        CACHES = {
+            "default": {
+                "BACKEND": "django_redis.cache.RedisCache",
+                "LOCATION": REDIS_URL,
+                "OPTIONS": {
+                    "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                },
+                "KEY_PREFIX": "eve_healthcare",
+                "TIMEOUT": 300,  # 5 minutes
+            }
         }
-    }
+    except ImportError:
+        pass
 
 # ---------------------------------------------------------------------------
 # Celery Background Tasks
 # ---------------------------------------------------------------------------
-CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
+CELERY_BROKER_URL = env_str("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = env_str("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
-
