@@ -262,8 +262,14 @@ SPECTACULAR_SETTINGS = {
 # ---------------------------------------------------------------------------
 # CORS
 # ---------------------------------------------------------------------------
+from corsheaders.defaults import default_headers
+
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", ["http://localhost:3000", "http://localhost:5173"])
 CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", True)
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "bypass-tunnel-reminder",
+    "x-requested-with",
+]
 
 # ---------------------------------------------------------------------------
 # Payment simulation
