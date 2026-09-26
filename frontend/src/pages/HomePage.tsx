@@ -4,18 +4,24 @@ import { ShieldCheck, Activity, Calendar, ArrowRight, Terminal } from 'lucide-re
 import { centresApi } from '../api';
 import { DiagnosticCentre } from '../types';
 import { Button, Card, Spinner } from '../components/common';
+import { useAuth } from '../context/AuthContext';
 
 export const HomePage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [centres, setCentres] = useState<DiagnosticCentre[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
     centresApi
       .getCentres()
       .then((res) => setCentres(res.results.slice(0, 3)))
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [isAuthenticated]);
 
   const features = [
     {

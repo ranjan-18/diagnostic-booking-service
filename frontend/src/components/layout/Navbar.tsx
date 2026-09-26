@@ -16,9 +16,9 @@ export const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { label: 'Diagnostic Catalog', path: '/catalog', icon: <Activity className="w-4 h-4" /> },
+    { label: 'Diagnostic Catalog', path: '/catalog', icon: <Activity className="w-4 h-4" />, requiresAuth: true },
     { label: 'My Bookings', path: '/bookings', icon: <Calendar className="w-4 h-4" />, requiresAuth: true },
-    { label: 'Webhook Sandbox', path: '/webhook-sandbox', icon: <Terminal className="w-4 h-4" /> },
+    { label: 'Webhook Sandbox', path: '/webhook-sandbox', icon: <Terminal className="w-4 h-4" />, requiresAuth: true },
   ];
 
   return (

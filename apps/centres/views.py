@@ -1,7 +1,7 @@
 """
 Read-only viewsets for centres and tests.
 """
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .filters import DiagnosticCentreFilter, DiagnosticTestFilter
@@ -20,7 +20,7 @@ class DiagnosticCentreViewSet(ReadOnlyModelViewSet):
 
     Supports filtering by ?location=<str> and ?is_active=true
     """
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     filterset_class = DiagnosticCentreFilter
     search_fields = ["name", "location"]
     ordering_fields = ["name", "created_at"]
@@ -43,7 +43,7 @@ class DiagnosticTestViewSet(ReadOnlyModelViewSet):
     Supports ?min_price, ?max_price, ?is_active filters.
     """
     serializer_class = DiagnosticTestSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     filterset_class = DiagnosticTestFilter
     search_fields = ["name", "description"]
     ordering_fields = ["name", "price"]

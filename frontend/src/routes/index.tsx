@@ -17,20 +17,41 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        {/* Public Routes */}
+        {/* Public Authentication & Landing Routes */}
         <Route index element={<HomePage />} />
-        <Route path="catalog" element={<CatalogPage />} />
-        <Route path="centres/:id" element={<CentreDetailPage />} />
-        <Route path="webhook-sandbox" element={<WebhookTestingPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignupPage />} />
 
-        {/* Protected Routes (Require Authentication) */}
+        {/* Protected Routes (Require Authentication - No execution if not logged in) */}
+        <Route
+          path="catalog"
+          element={
+            <ProtectedRoute>
+              <CatalogPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="centres/:id"
+          element={
+            <ProtectedRoute>
+              <CentreDetailPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="bookings"
           element={
             <ProtectedRoute>
               <MyBookingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="webhook-sandbox"
+          element={
+            <ProtectedRoute>
+              <WebhookTestingPage />
             </ProtectedRoute>
           }
         />

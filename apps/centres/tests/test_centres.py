@@ -51,8 +51,7 @@ class TestCentresList:
     def test_list_centres_unauthenticated(self, client, centre):
         url = reverse("centre-list")
         response = client.get(url)
-        # Read-only endpoints allow unauthenticated access
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_filter_by_location(self, auth_client, centre):
         url = reverse("centre-list")
