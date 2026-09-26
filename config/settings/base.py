@@ -6,6 +6,21 @@ from datetime import timedelta
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
+# Load .env file into os.environ if present
+# ---------------------------------------------------------------------------
+_env_file = Path(__file__).resolve().parent.parent.parent / ".env"
+if _env_file.exists():
+    with open(_env_file, encoding="utf-8") as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _v = _line.split("=", 1)
+                _k = _k.strip()
+                _v = _v.strip()
+                if _k and _v:
+                    os.environ[_k] = _v
+
+# ---------------------------------------------------------------------------
 # Safe Environment Helpers (Handles empty strings and missing keys gracefully)
 # ---------------------------------------------------------------------------
 def env_str(key: str, default: str = "") -> str:

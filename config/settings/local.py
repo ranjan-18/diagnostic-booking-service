@@ -2,17 +2,6 @@
 Local development settings.
 """
 import os
-
-# Set sensible defaults so tests work without a .env file.
-# In production these MUST be overridden via real environment variables.
-os.environ.setdefault("DJANGO_SECRET_KEY", "local-dev-insecure-key-replace-me")
-os.environ.setdefault("DJANGO_DEBUG", "True")
-os.environ.setdefault("DB_HOST", "localhost")
-os.environ.setdefault("DB_NAME", "eve_healthcare")
-os.environ.setdefault("DB_USER", "postgres")
-os.environ.setdefault("DB_PASSWORD", "postgres")
-os.environ.setdefault("DB_PORT", "5432")
-
 from .base import *  # noqa: F401, F403
 
 DEBUG = True
