@@ -1,6 +1,8 @@
 import React from 'react';
 import { ShieldCheck, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../../utils/constants';
+
 
 export const Footer: React.FC = () => {
   return (
@@ -49,7 +51,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="http://127.0.0.1:8000/api/docs/"
+                  href={`${API_BASE_URL || ''}/api/docs/`}
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-white transition-colors"
@@ -59,7 +61,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="http://127.0.0.1:8000/api/schema/"
+                  href={`${API_BASE_URL || ''}/api/schema/`}
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-white transition-colors"
@@ -69,7 +71,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="http://127.0.0.1:8000/admin/"
+                  href={`${API_BASE_URL || ''}/admin/`}
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-white transition-colors"
