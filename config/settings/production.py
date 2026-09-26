@@ -5,8 +5,14 @@ from .base import *  # noqa: F401, F403
 
 DEBUG = env_bool("DJANGO_DEBUG", False)
 
-# Allow all Vercel domains and configured hosts
-ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", ["*", ".vercel.app", "localhost", "127.0.0.1"])
+ALLOWED_HOSTS = ["*"]
+CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.vercel.app",
+    "https://*.loca.lt",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 # Vercel SSL Reverse Proxy Support
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
