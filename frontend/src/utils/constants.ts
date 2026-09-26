@@ -1,6 +1,6 @@
 import { BookingStatus, PaymentStatus } from '../types';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8000' : '');
 
 export const STATUS_COLORS: Record<BookingStatus, { bg: string; text: string; border: string; dot: string }> = {
   PENDING: {

@@ -47,6 +47,7 @@ try:
             return [b'{"error": "Internal Server Error", "detail": "' + str(e).encode() + b'"}']
 
     application = app
+    handler = app
 
 except Exception as err:
     traceback.print_exc()
@@ -65,3 +66,4 @@ except Exception as err:
         ]
 
     application = app
+    handler = app
