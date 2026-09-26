@@ -2,10 +2,27 @@
 Root URL configuration.
 """
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+
+def health_check(request):
+    return JsonResponse(
+        {
+            "status": "healthy",
+            "service": "EVE Healthcare Diagnostic Booking Service",
+            "docs": "/api/docs/",
+        }
+    )
+
+
 urlpatterns = [
+    # Root redirects to interactive Swagger UI documentation
+    path("", RedirectView.as_view(url="/api/docs/", permanent=False), name="root-redirect"),
+    path("api/health/", health_check, name="health-check"),
+
     # Admin
     path("admin/", admin.site.urls),
 

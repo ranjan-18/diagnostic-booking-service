@@ -125,14 +125,16 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # ---------------------------------------------------------------------------
 IS_VERCEL = bool(os.environ.get("VERCEL"))
+USE_SQLITE = env_bool("USE_SQLITE", False)
 db_host = env_str("DB_HOST", "localhost")
 
-# If on Vercel without a remote Postgres host, fallback to /tmp SQLite
-if IS_VERCEL and (db_host in ("localhost", "127.0.0.1") or not os.environ.get("DB_HOST")):
+# If on Vercel without a remote Postgres host, or USE_SQLITE is requested
+if USE_SQLITE or (IS_VERCEL and (db_host in ("localhost", "127.0.0.1") or not os.environ.get("DB_HOST"))):
+    sqlite_path = "/tmp/db.sqlite3" if IS_VERCEL else BASE_DIR / "db.sqlite3"
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": "/tmp/db.sqlite3",
+            "NAME": sqlite_path,
         }
     }
 else:
